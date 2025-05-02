@@ -1,9 +1,7 @@
-import subprocess
+from tools import dnslookup
 
 def main() -> int:
-    result = subprocess.run(["ls", "-l"], shell=True, capture_output=True, text=True)
-    
-    print(result.stdout)
+    dnslookup.dnslookup("insper.edu.br")
     
     return 0
 
