@@ -1,8 +1,16 @@
-from tools import dnslookup
+from tools import *
 
 def main() -> int:
-    dnslookup.dnslookup("insper.edu.br")
-    
+    # dnslookup.dnslookup("youtube1com")
+
+    print("1. DNS Lookup\n"
+          "2. Portscan\n"
+          "3. WHOIS\n"
+          "4. WafW00f\n"
+    )
+
+    wafwoof.wafwoof("aula.avelinux.com.br")
+
     return 0
 
 if __name__ == "__main__":
