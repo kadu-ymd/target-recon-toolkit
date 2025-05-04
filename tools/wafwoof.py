@@ -9,11 +9,45 @@ def wafwoof(domain: str):
     result.check_returncode()
     
     lista_result = result.stdout.strip().split("\n")
-    lista_result = lista_result[len(lista_result)-3:]
 
-    lista_final = [re.compile(r'\x1b\[[0-9;]*m').sub('', item) for item in lista_result]
-    lista_final = [item[3:] for item in lista_final]
+    aux_idx = 0
 
+    for i in lista_result:
+        if i == "":
+            aux_idx = lista_result.index(i) + 4
+            break
+
+    aux_lista = lista_result[aux_idx:]
+
+    lista_final = [re.compile(r'\x1b\[[0-9;]*m').sub('', item) for item in aux_lista]
+
+    lista_final = [item[3:].strip() for item in lista_final]
+
+    if len(lista_final) <= 1:
+        print(f"-> Nenhum WAF encontrado para o dominio {domain}")
+        return 1
+    
     print(lista_final)
+
+
+
+    # aux_idx = 0
+
+    # for item in lista_final:
+    #     if item.startswith("Checking"):
+    #         aux_idx = lista_final.index(item)
+    #         break
+    #     elif item.startswith("Generic"):
+    #         aux_idx = lista_final.index(item)
+    #         break
+    
+    # print(result.stdout)
+
+    # aux_list = lista_final[aux_idx:]
+
+    # print(aux_list)
+
+    # if len(aux_list) > 1:
+
 
     return 

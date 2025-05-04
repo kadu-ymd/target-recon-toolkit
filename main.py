@@ -9,7 +9,7 @@ def main() -> int:
           "4. WafW00f\n"
     )
 
-    wafwoof.wafwoof("aula.avelinux.com.br")
+    wafwoof.wafwoof("https://www.clickjogos.com.br")
 
     return 0
 
