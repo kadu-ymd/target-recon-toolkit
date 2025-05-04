@@ -26,10 +26,16 @@ def wafwoof(domain: str):
     if len(lista_final) <= 1:
         print(f"-> Nenhum WAF encontrado para o dominio {domain}")
         return 1
-    
-    print(lista_final)
 
+    # match = re.search(r'is behind (.+?) WAF', lista_final[2])
 
+    # if match:
+    #     print(f"WAF: {match.group(1)}")
+    # else:
+    #     print("WAF nao encontrado")
+
+    # if lista_final[0][8:] not in waf_dict:
+    #     waf_dict[lista_final[0][8:]] = []
 
     # aux_idx = 0
 
