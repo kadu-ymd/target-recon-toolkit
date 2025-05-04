@@ -1,4 +1,3 @@
-import sys
 import socket
 import datetime
 
@@ -10,7 +9,9 @@ def scanner(ip: str,
             ip_version: int,
             start_port: int = 1, 
             end_port: int = 1000
-    ):
+    ) -> dict:
+
+    portscan_dict = {f"{ip}": {"open_ports": [], "closed_ports": [], "filtered_ports": []}}
 
     print("----------------------------------")
 
@@ -44,11 +45,17 @@ def scanner(ip: str,
                     
                     if not errno_code:
                         result = f"{port}/{protocol} - {service} - open"
+
+                        portscan_dict[f"{ip}"]["open_ports"].append(port)
                         ports_open += 1
+
                     elif errno_code in [111, 10061]:
                         result = f"{port}/{protocol} - {service} - closed"
+                        portscan_dict[f"{ip}"]["closed_ports"].append(port)
+
                     else:
                         result = f"{port}/{protocol} - {service} - filtered"
+                        portscan_dict[f"{ip}"]["filtered_ports"].append(port)
                         
                     print(result)
 
@@ -71,6 +78,8 @@ def scanner(ip: str,
 
         raise KeyboardInterrupt("\nOperacao cancelada pelo usuario")
 
+    return portscan_dict
+
 def scanNetwork(
         network: str, 
         protocol: str, 
@@ -80,46 +89,51 @@ def scanNetwork(
         start_ip: int = 1, 
         end_ip: int = 255, 
     ):
+
+    portscan_dict = {}
     
     print(f"Rede a ser escaneada: {network}")
     
     for ip in range(start_ip, end_ip + 1):
         hostname = network + "." + str(ip)
         
-        scanner(hostname, protocol, ip_proto, start_port, end_port)
+        portscan_dict = scanner(hostname, protocol, ip_proto, start_port, end_port)
 
     print(f"Escaneamento da rede finalizada")
+
+    return portscan_dict
     
-def main():
-    if len(sys.argv) > 1:
-        if sys.argv[1] in ["-u", "-U"]:
-            protocol = "udp"
-        elif sys.argv[1] in ["-t", "-T"]:
-            protocol = "tcp"
-        else:
-            raise Exception("Sintaxe incorreta: primeiro argumento (protocolo) deve ser -t para TCP ou -u para UDP")
+def portscan(**kwargs) -> int:
+    portscan_dict = {}
+
+    if kwargs["protocol"] in ["-u", "-U"]:
+        protocol = "udp"
+    elif kwargs["protocol"] in ["-t", "-T"]:
+        protocol = "tcp"
+    else:
+        raise Exception("Sintaxe incorreta: primeiro argumento (protocolo) deve ser -t para TCP ou -u para UDP")
+    
+    if kwargs["version"] in ["-v4", "-V4"]:
+        version = socket.AF_INET
+    elif kwargs["vers  ion"] in ["-v6", "-V6"]:
+        version = socket.AF_INET6
+    else:
+        raise Exception("Sintaxe invalida: o argumento do protocolo IP deve ser -v4 ou -v6")
         
-        if sys.argv[3] in ["-v4", "-V4"]:
-            version = socket.AF_INET
-        elif sys.argv[3] in ["-v6", "-V6"]:
-            version = socket.AF_INET6
-        else:
-            raise Exception("Sintaxe invalida: o argumento do protocolo IP deve ser -v4 ou -v6")
-        
-    if len(sys.argv) == 5:
-        if sys.argv[2] in ["-n", "-N"]:
-            network = sys.argv[4]
+    if len(kwargs) - 1 == 4:
+        if kwargs["type"] in ["-n", "-N"]:
+            network = kwargs["network"]
 
-            scanNetwork(network, protocol, version)
+            portscan_dict = scanNetwork(network, protocol, version)
 
-        elif sys.argv[2] in ["-h", "-H"]:
-            hostname = sys.argv[4]
+        elif kwargs["type"] in ["-h", "-H"]:
+            hostname = kwargs["hostname"]
 
-            scanner(hostname, protocol, version)
+            portscan_dict = scanner(hostname, protocol, version)
 
-    elif len(sys.argv) == 6:
-        if sys.argv[5].startswith("port_range="):
-            port_range = sys.argv[5][11:].split(",")
+    elif len(kwargs) - 1 == 5:
+        if kwargs["port_range"]:
+            port_range = kwargs["port_range"]
 
             try:
                 start_port = int(port_range[0])
@@ -127,18 +141,18 @@ def main():
             except:
                 raise Exception("Sintaxe invalida: verifique se os valores do port_range sao inteiros")
 
-            if sys.argv[2] in ["-n", "-N"]:
-                network = sys.argv[4]
+            if kwargs["type"] in ["-n", "-N"]:
+                network = kwargs["network"]
 
-                scanNetwork(network, protocol, version, start_port, end_port)
+                portscan_dict = scanNetwork(network, protocol, version, start_port, end_port)
 
-            elif sys.argv[2] in ["-h", "-H"]:
-                hostname = sys.argv[4]
+            elif kwargs["type"] in ["-h", "-H"]:
+                hostname = kwargs["hostname"]
 
-                scanner(hostname, protocol, version, start_port, end_port)
+                portscan_dict = scanner(hostname, protocol, version, start_port, end_port)
 
-        elif sys.argv[5].startswith("ip_range=") and sys.argv[2] in ["-n", "-N"]:
-            ip_range = sys.argv[5][9:].split(",")
+        elif kwargs["ip_range"] and kwargs["type"] in ["-n", "-N"]:
+            ip_range = kwargs["ip_range"]
 
             try:
                 start_ip = int(ip_range[0])
@@ -146,15 +160,15 @@ def main():
             except:
                 raise Exception("Sintaxe invalida: verifique se os valores do ip_range sao inteiros")
 
-            network = sys.argv[4]
+            network = kwargs["network"]
 
-            scanNetwork(network, protocol, start_ip=start_ip, end_ip=end_ip)
+            portscan_dict = scanNetwork(network, protocol, start_ip=start_ip, end_ip=end_ip)
         else:
             raise Exception("Sintaxe invalida: o ip_range so pode ser utilizado para escaneamento de rede")
         
-    elif len(sys.argv) == 7 and sys.argv[2] in ["-n", "-N"]:
-        if sys.argv[5].startswith("port_range="):
-            port_range = sys.argv[5][11:].split(",")
+    elif len(kwargs) - 1 == 6 and kwargs["type"] in ["-n", "-N"]:
+        if kwargs["port_range"]:
+            port_range = kwargs["port_range"]
 
             try:
                 start_port = int(port_range[0])
@@ -162,8 +176,8 @@ def main():
             except:
                 raise Exception("Sintaxe invalida: verifique se os valores do port_range sao inteiros")
             
-            if sys.argv[6].startswith("ip_range="):
-                ip_range = sys.argv[6][9:].split(",")
+            if kwargs["ip_range"]:
+                ip_range = kwargs["ip_range"]
 
                 try:
                     start_ip = int(ip_range[0])
@@ -171,9 +185,9 @@ def main():
                 except:
                     raise Exception("Sintaxe invalida: verifique se os valores do ip_range sao inteiros")
 
-                network = sys.argv[4]
+                network = kwargs["network"]
 
-                scanNetwork(network, protocol, start_port, end_port, start_ip, end_ip)
+                portscan_dict = scanNetwork(network, protocol, start_port, end_port, start_ip, end_ip)
             else:
                 raise Exception("Sintaxe invalida: verifique se o ip_range foi utilizado corretamente")
         else:
@@ -182,7 +196,7 @@ def main():
     else:
         raise Exception("Quantidade incorreta de argumentos")
         
-    return 0
+    return portscan_dict
 
 if __name__ == "__main__":
-    main()
+    portscan()
