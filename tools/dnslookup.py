@@ -2,10 +2,6 @@ import subprocess
 import re
 
 class DNSLookup:
-    def __init__(self):
-        pass
-
-
     @staticmethod
     def dns_type(type: int):
         if type == 1:
@@ -16,8 +12,6 @@ class DNSLookup:
             return "any"
         elif type == 4:
             return "ptr"
-        elif type == 5:
-            return 
         else:
             raise ValueError(f"{type} is not a valid type")
 
@@ -57,31 +51,46 @@ def dnslookup(domain: str,
 
     result.check_returncode()
 
-    print(output)
-
-    lista = [re.sub(r"\t", "", item) for item in output.strip().split("\n")[4:]]
-    lista_aux = [item[item.find(":")+1:].strip() for item in lista]
-    output_list = list(zip(*[iter(lista_aux)]*2))
+    aux_lista = [item for item in output.strip().split("\n")]
     
-    # for item in output_list:
-    #     _domain, ipaddr = item
+    if "ns" in type:
+        dns_dict = {"Non-authoritative": {}, "Authoritative": {}}
+        flag_non_authoritative = False
+        flag_authoritative = False
 
-    #     aux_ipaddr = {"IPv4": [], "IPv6": []}
+        for item in aux_lista[3:]:
+            if flag_non_authoritative:
+                _domain = item.split("\t")[0].strip()
 
-    #     if _domain not in dns_dict:
-    #         dns_dict[_domain] = aux_ipaddr
+                if item == "":
+                    flag_non_authoritative = False
+                
+                if flag_non_authoritative:
+                    if _domain not in dns_dict["Non-authoritative"]:
+                        dns_dict["Non-authoritative"][_domain] = [item.split("\t")[1].strip().split()[2]]
+                    else:
+                        dns_dict["Non-authoritative"][_domain].append(item.split("\t")[1].strip().split()[2])
 
-    #         if len(ipaddr.split(".")) > 1:
-    #             dns_dict[_domain]["IPv4"].append(ipaddr)
-    #         else:
-    #             dns_dict[_domain]["IPv6"].append(ipaddr)
-    #     else:
-    #         if len(ipaddr.split(".")) > 1:
-    #             dns_dict[_domain]["IPv4"].append(ipaddr)
-    #         else:
-    #             dns_dict[_domain]["IPv6"].append(ipaddr)
+            if flag_authoritative:
+                nameserver = item.split("\t")[0].strip()
 
-    # print(dns_dict)
+                if item == "":
+                    flag_authoritative = False
+                
+                if flag_authoritative:
+                    if nameserver not in dns_dict["Authoritative"]:
+                        dns_dict["Authoritative"][nameserver] = [item.split("\t")[1].strip().split()[3]]
+                    else:
+                        dns_dict["Authoritative"][nameserver].append(item.split("\t")[1].strip().split()[3])
 
-    # lista = [re.sub(r"\t", "", i) for i in output.split("\n")]
-    # print(lista)
+            if "Non-authoritative" in item:
+                flag_non_authoritative = True
+            
+            if "Authoritative" in item:
+                flag_authoritative = True
+
+    # elif "soa" in type:
+
+    print(aux_lista)
+
+    print(dns_dict)

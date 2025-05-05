@@ -5,10 +5,6 @@ import socket
 
 OPTIONS = {"indent": 4, "sort_keys": True}
 
-def dns_type():
-    
-    return
-
 def main() -> int:
     file_list = []
 
@@ -44,6 +40,11 @@ def main() -> int:
             print("5. Go back")
             print()
 
+            dns_lookup_type = None
+            dns_lookup_query = None
+            dns_lookup_std = None
+            server = None
+
             lookup_type = int(input("Enter the number of the type you want to use: "))
             print()
 
@@ -51,6 +52,9 @@ def main() -> int:
                 print(f"{lookup_type} is not a valid number")
                 lookup_type = int(input("Enter a valid number of the type you want to use: "))
                 print()
+
+            if lookup_type == 5:
+                return main()
 
             dns_lookup_type = dnslookup.DNSLookup.dns_type(lookup_type)
 
@@ -80,7 +84,7 @@ def main() -> int:
         elif options == 4:
             return main()
         
-        domain = input("Enter the domain you want to inspect: ")
+        domain = input("Enter the domain (standard) or IP (reverse) you want to inspect: ")
 
         dns_dict = dnslookup.dnslookup(domain,
                                        type=dns_lookup_type,
