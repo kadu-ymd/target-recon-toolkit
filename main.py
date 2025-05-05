@@ -1,9 +1,11 @@
 from tools import *
 import json
-import socket
+import subprocess
 
 
 OPTIONS = {"indent": 4, "sort_keys": True}
+
+def clear(): subprocess.run(["clear"], check=True)
 
 def main() -> int:
     file_list = []
@@ -15,7 +17,7 @@ def main() -> int:
     print("3. WafW00f")
 
     tool = int(input("Enter the number of the tool you want to use: "))
-    print()
+    clear()
 
     if tool == 1:
         print("Tool: DNS Lookup")
@@ -26,11 +28,16 @@ def main() -> int:
         print("4. Go back")
 
         options = int(input("Enter the number of the option you want to use: "))
-        print()
+        clear()
 
         while options > 4 or options < 1:
             print(f"{options} is not a valid number")
             options = int(input("Enter a valid number of the option you want to use: "))
+
+        dns_lookup_type = None
+        dns_lookup_query = None
+        dns_lookup_std = None
+        server = None
 
         if options == 1:
             print("1. Name servers")
@@ -40,13 +47,8 @@ def main() -> int:
             print("5. Go back")
             print()
 
-            dns_lookup_type = None
-            dns_lookup_query = None
-            dns_lookup_std = None
-            server = None
-
             lookup_type = int(input("Enter the number of the type you want to use: "))
-            print()
+            clear()
 
             while lookup_type > 5 or lookup_type < 1:
                 print(f"{lookup_type} is not a valid number")
@@ -67,7 +69,7 @@ def main() -> int:
             print("3. Go back")
 
             dns_lookup_std = int(input("Enter the number of the type you want to use: "))
-            print()
+            clear()
 
             while dns_lookup_std > 3 or dns_lookup_std < 1:
                 print(f"{dns_lookup_std} is not a valid number")
@@ -86,15 +88,21 @@ def main() -> int:
         
         domain = input("Enter the domain (standard) or IP (reverse) you want to inspect: ")
 
-        dns_dict = dnslookup.dnslookup(domain,
+        dns_output = dnslookup.dnslookup(domain,
                                        type=dns_lookup_type,
                                        query=dns_lookup_query,
                                        server=server)
         
-        file_list.append(("DNSLookup", dns_dict))
+        file_list.append(("dnslookup", dns_output))
+        
+        clear()
+        print("DNS Lookup results...")
+        print(dns_output["result"])
 
     elif tool == 2:
         print("Tool: Portscan")
+
+        print("Choose the protocol you want to use:")
 
         print("1. TCP")
         print("2. UDP")
@@ -103,7 +111,7 @@ def main() -> int:
         kwargs = {}
 
         portscan_type = int(input("Enter the number of the type you want to use: "))
-        print()
+        clear()
 
         while portscan_type > 3 or portscan_type < 1:
             print(f"{portscan_type} is not a valid number")
@@ -117,12 +125,14 @@ def main() -> int:
         elif portscan_type == 3:
             return main()
         
+        print("Choose the IP version you want to use:")
+
         print("1. IPv4")
         print("2. IPv6")
         print("3. Go back")
 
         ip_version = int(input("Enter the number of the type you want to use: "))
-        print()
+        clear()
 
         while ip_version > 3 or ip_version < 1:
             print(f"{ip_version} is not a valid number")
@@ -136,12 +146,14 @@ def main() -> int:
         elif ip_version == 3:
             return main()
 
+        print("Choose the type of scan (network/hostname) you want to use:")
+
         print("1. Network")
         print("2. Hostname")
         print("3. Go back")
 
         scan_type = int(input("Enter the number of the type you want to use: "))
-        print()
+        clear()
 
         while scan_type > 3 or scan_type < 1:
             print(f"{scan_type} is not a valid number")
@@ -162,13 +174,15 @@ def main() -> int:
             hostname = input("Enter the host IP address you want to scan: ")
             kwargs["hostname"] = hostname
 
+        print("Choose the range (port/IP) you want to scan:")
+
         print("1. Port range")
         print("2. IP range")
         print("3. Continue (using default values)")
         print("4. Go back")
 
         range_num = int(input("Enter the number of the type you want to use: "))
-        print()
+        clear()
 
         while range_num > 4 or range_num < 1:
             print(f"{range_num} is not a valid number")
@@ -201,6 +215,8 @@ def main() -> int:
         elif range_num == 4:
             return main()
 
+        print("Portscan results...")
+
         port_dict = ("portscan", portscan.portscan(**kwargs))
         file_list.append(port_dict)
 
@@ -208,10 +224,11 @@ def main() -> int:
         print("Tool: WAFW00F")
 
         domains = input("Enter the domain(s) you want to inspect (separated by space): ")
-        print()
+        clear()
 
         domains = domains.strip().split(" ")
 
+        print("WAFW00F results...")
         waf_dict = ("wafw00f", wafwoof.wafwoof(domains))
         file_list.append(waf_dict)
 

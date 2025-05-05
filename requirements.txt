@@ -1,2 +1,1 @@
-python-whois==0.9.5
-shodan==1.31.0
+sockets==1.0.0
